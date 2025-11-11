@@ -87,8 +87,9 @@
 </div>
 
 <div id="main-content" style="display:none;">
-  <h1 style="text-align:center; color:#fff; text-shadow: 1px 1px 2px #000;">情報を公開する</h1>
+  <h1 style="text-align:center; color:#fff; text-shadow: 1px 1px 2px #000;">時間指定で情報を公開する小アプリ</h1>
   <div class="card" id="admin-panel">
+    <h2>まっせーじはなに</h2>
     <label>テキスト</label>
     <textarea id="secret" rows="4" placeholder="ここにテキストを入力"></textarea>
     <label>画像・動画のURL（任意）</label>
@@ -109,7 +110,7 @@
 </div>
 
 <script>
-const ADMIN_PASS = 'nfwatty1229';
+const ADMIN_PASS = 'admin123';
 const roleSelection = document.getElementById('role-selection');
 const passwordPanel = document.getElementById('password-panel');
 const mainContent = document.getElementById('main-content');
@@ -120,8 +121,14 @@ let storage = JSON.parse(localStorage.getItem('scheduled_reveals')||'[]');
 function renderList(){
   const container = document.getElementById('list');
   container.innerHTML = '';
-  if(storage.length === 0){ container.innerHTML = '（まだ登録されていません）'; return; }
-  storage.forEach(e=>{
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'yes';
+
+  const now = new Date();
+  const filtered = storage.filter(e=>isAdmin || new Date(e.when) <= now);
+
+  if(filtered.length === 0){ container.innerHTML = '（まだ登録されていません）'; return; }
+
+  filtered.forEach((e, idx)=>{
     const div = document.createElement('div');
     div.className = 'card';
     div.style.transition='all 0.3s ease';
@@ -129,6 +136,9 @@ function renderList(){
     html += e.text ? `<p>${e.text}</p>` : '';
     if(e.media) html += `<img src='${e.media}' style='max-width:100%;margin-top:4px;border-radius:8px;'><br>`;
     if(e.link) html += `<a href='${e.link}' target='_blank'>リンクはこちら</a><br>`;
+    if(isAdmin){
+      html += `<button onclick='deleteEntry(${idx})' style='background:#b00'>削除</button>`;
+    }
     div.innerHTML = html;
     container.appendChild(div);
   });
@@ -147,6 +157,12 @@ document.getElementById('save').addEventListener('click', ()=>{
   document.getElementById('link-url').value='';
   renderList();
 });
+
+function deleteEntry(idx){
+  storage.splice(idx,1);
+  localStorage.setItem('scheduled_reveals', JSON.stringify(storage));
+  renderList();
+}
 
 document.getElementById('choose-admin').addEventListener('click', ()=>{
   roleSelection.style.display = 'none';
@@ -181,3 +197,4 @@ window.addEventListener('load', renderList);
 
 </body>
 </html>
+
