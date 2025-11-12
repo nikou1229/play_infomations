@@ -10,8 +10,10 @@
     padding: 20px;
     max-width: 900px;
     margin: auto;
-    background: url('your-background.jpg') no-repeat center center / cover;
+    background: url('image.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: #222;
+    min-height: 100vh;
   }
   .overlay {
     background: rgba(255,255,255,0.75);
@@ -101,7 +103,6 @@ const listContainer = document.getElementById('list');
 let storage = JSON.parse(localStorage.getItem('scheduled_reveals') || '[]');
 let isAdmin = false;
 
-// ====== Render ======
 function renderList() {
   listContainer.innerHTML = '';
   if (storage.length === 0) {
@@ -113,8 +114,6 @@ function renderList() {
   storage.forEach((e, i) => {
     const revealTime = new Date(e.when);
     const isRevealed = revealTime <= now;
-
-    // 閲覧者は非公開の情報を見ない
     if (!isAdmin && !isRevealed) return;
 
     const div = document.createElement('div');
@@ -122,7 +121,7 @@ function renderList() {
     let html = `<strong>公開日時:</strong> ${e.when}<br>`;
     html += e.text ? `<p>${e.text}</p>` : '';
     if (e.media) {
-      if (e.media.match(/\\.(mp4|webm|ogg)$/)) {
+      if (e.media.match(/\.(mp4|webm|ogg)$/)) {
         html += `<video src='${e.media}' controls style='max-width:100%;margin-top:4px'></video>`;
       } else {
         html += `<img src='${e.media}' style='max-width:100%;margin-top:4px'>`;
@@ -152,7 +151,6 @@ function renderList() {
   if (listContainer.innerHTML === '') listContainer.textContent = '（まだ公開されていません）';
 }
 
-// ====== Save ======
 document.getElementById('save').addEventListener('click', () => {
   const text = document.getElementById('secret').value.trim();
   const media = document.getElementById('media-url').value.trim();
@@ -167,10 +165,9 @@ document.getElementById('save').addEventListener('click', () => {
   document.getElementById('link-url').value = '';
   document.getElementById('dt').value = '';
 
-  renderList(); // 即更新（管理者なので全表示）
+  renderList();
 });
 
-// ====== Role Selection ======
 document.getElementById('choose-admin').addEventListener('click', () => {
   roleSel.style.display = 'none';
   passPanel.style.display = 'block';
@@ -183,7 +180,6 @@ document.getElementById('choose-viewer').addEventListener('click', () => {
   renderList();
 });
 
-// ====== Password ======
 document.getElementById('submit-pass').addEventListener('click', () => {
   const pass = document.getElementById('admin-pass-input').value;
   if (pass === ADMIN_PASS) {
